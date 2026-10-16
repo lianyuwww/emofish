@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>记账本</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand">记账本</div>
+    <nav>
+      <button class="nav-btn active" data-view="record">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        记一笔
+      </button>
+      <button class="nav-btn" data-view="stats">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        统计
+      </button>
+      <button class="nav-btn" data-view="trend">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l3.4-3.8 3 2.4L20 6"/></svg>
+        收支走势
+      </button>
+      <button class="nav-btn" data-view="history">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        历史
+      </button>
+      <button class="nav-btn" data-view="categories">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        分类管理
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="goal-mini">
+        <div class="label">存钱目标</div>
+        <div class="bar"><div class="fill" id="goal-mini-fill"></div></div>
+        <div class="pct" id="goal-mini-pct">0%</div>
+      </div>
+      <div class="hint">数据存于本地 · 离线可用</div>
+    </div>
+  </aside>
+
+  <main class="content">
+    <!-- 记账 -->
+    <section id="view-record" class="view active">
+      <h2>记一笔</h2>
+      <div class="record-box">
+        <div class="type-toggle">
+          <button class="type-btn expense active" data-type="expense">支出</button>
+          <button class="type-btn income" data-type="income">收入</button>
+        </div>
+        <div id="category-picker" class="category-picker"></div>
+        <div class="form-row">
+          <label>金额</label>
+          <input id="rec-amount" type="number" step="0.01" min="0.01" placeholder="0.00">
+        </div>
+        <div class="form-row">
+          <label>日期</label>
+          <div class="date-stepper">
+            <input id="rec-date" type="date">
+            <div class="step-btns">
+              <button type="button" id="rec-date-prev" class="step-btn" title="前一天">▲</button>
+              <button type="button" id="rec-date-next" class="step-btn" title="后一天">▼</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-row">
+          <label>备注</label>
+          <input id="rec-remark" type="text" maxlength="50" placeholder="选填">
+        </div>
+        <button id="btn-save" class="primary-btn">记一笔</button>
+      </div>
+    </section>
+
+    <!-- 统计 -->
+    <section id="view-stats" class="view">
+      <div class="view-head">
+        <h2>统计</h2>
+        <div class="range-toggle">
+          <button class="range-btn active" data-range="month">月</button>
+          <button class="range-btn" data-range="year">年</button>
+        </div>
+        <div class="month-nav" id="month-nav">
+          <button class="nav-arrow" id="prev-month" title="上一月">‹</button>
+          <span class="month-display" id="month-display">2024年1月</span>
+          <button class="nav-arrow" id="next-month" title="下一月">›</button>
+        </div>
+      </div>
+      <div class="goal-card">
+        <div class="goal-left">
+          <div class="goal-title">存钱目标</div>
+          <div class="goal-balance">
+            <span class="goal-balance-label">已攒下</span>
+            <span class="goal-balance-value" id="goal-balance">¥0.00</span>
+          </div>
+          <div class="goal-remain"><span class="cap" id="goal-cap">离目标还差</span><span id="goal-remain">¥0.00</span></div>
+          <div class="goal-input">目标 <input id="goal-target" type="number" min="1"> 元</div>
+        </div>
+        <div class="goal-right">
+          <div class="bottle">
+            <svg class="bottle-svg" viewBox="0 0 140 200" aria-hidden="true">
+              <defs>
+                <clipPath id="jarClip">
+                  <path d="M54 14 H86 a6 6 0 0 1 6 6 v18 c8 6 12 16 12 28 v100 a16 16 0 0 1 -16 16 H36 a16 16 0 0 1 -16 -16 v-100 c0 -12 4 -22 12 -28 v-18 a6 6 0 0 1 6 -6 Z"></path>
+                </clipPath>
+                <linearGradient id="waterG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#63d4de"></stop>
+                  <stop offset="1" stop-color="#0e7490"></stop>
+                </linearGradient>
+              </defs>
+              <g clip-path="url(#jarClip)">
+                <g id="water">
+                  <rect x="16" y="0" width="108" height="200" fill="url(#waterG)"></rect>
+                  <path d="M-160 0 q 40 -11 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 L 400 44 L -160 44 Z" fill="#1590a6" opacity="0.5">
+                    <animateTransform attributeName="transform" type="translate" from="0 0" to="-160 0" dur="9s" repeatCount="indefinite"></animateTransform>
+                  </path>
+                  <path d="M-160 0 q 40 -11 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 t 80 0 L 400 44 L -160 44 Z" fill="#5fd0db">
+                    <animateTransform attributeName="transform" type="translate" from="0 0" to="-160 0" dur="5s" repeatCount="indefinite"></animateTransform>
+                  </path>
+                  <circle class="bubble" cx="56" cy="26" r="4.5"></circle>
+                  <circle class="bubble" cx="84" cy="40" r="3.5"></circle>
+                  <circle class="bubble" cx="66" cy="14" r="3"></circle>
+                  <circle class="bubble" cx="76" cy="52" r="2.5"></circle>
+                </g>
+              </g>
+              <path class="glass-face" d="M54 14 H86 a6 6 0 0 1 6 6 v18 c8 6 12 16 12 28 v100 a16 16 0 0 1 -16 16 H36 a16 16 0 0 1 -16 -16 v-100 c0 -12 4 -22 12 -28 v-18 a6 6 0 0 1 6 -6 Z"></path>
+              <path class="shine" d="M38 52 c-5 30 -5 86 5 116"></path>
+            </svg>
+            <div class="bottle-caption"><span id="bottle-caption">0%</span><span class="cap">目标进度</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card income-card"><div class="card-label" id="label-income">收入</div><div id="card-income" class="card-value">0.00</div></div>
+        <div class="card expense-card"><div class="card-label" id="label-expense">支出</div><div id="card-expense" class="card-value">0.00</div></div>
+        <div class="card balance-card"><div class="card-label" id="label-balance">结余</div><div id="card-balance" class="card-value">0.00</div></div>
+      </div>
+      <div class="budget-card hidden" id="budget-card">
+        <div class="budget-head">
+          <span class="chart-title">分类预算</span>
+          <span class="budget-tip" id="budget-tip"></span>
+        </div>
+        <div class="budget-list" id="budget-list"></div>
+      </div>
+      <div class="detail-card">
+        <div class="detail-head">
+          <span class="bar-title">支出详情</span>
+        </div>
+        <div class="detail-body">
+          <div class="detail-pie"><div id="chart-pie" class="chart"></div></div>
+          <div class="detail-list" id="detail-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 收支走势 -->
+    <section id="view-trend" class="view">
+      <div class="view-head">
+        <h2>收支走势</h2>
+        <div class="range-toggle">
+          <button class="range-btn" data-trange="week">按周</button>
+          <button class="range-btn active" data-trange="month">按月</button>
+          <button class="range-btn" data-trange="year">按年</button>
+        </div>
+        <div class="month-nav" id="trend-nav">
+          <button class="nav-arrow" id="trend-prev" title="上一个">‹</button>
+          <span class="month-display" id="trend-period">—</span>
+          <button class="nav-arrow" id="trend-next" title="下一个">›</button>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card income-card"><div class="card-label" id="t-label-income">收入</div><div id="t-card-income" class="card-value">0.00</div></div>
+        <div class="card expense-card"><div class="card-label" id="t-label-expense">支出</div><div id="t-card-expense" class="card-value">0.00</div></div>
+        <div class="card balance-card"><div class="card-label" id="t-label-balance">结余</div><div id="t-card-balance" class="card-value">0.00</div></div>
+      </div>
+      <div class="chart-box trend-box">
+        <div class="chart-head">
+          <div class="chart-title" id="trend-title">收支走势</div>
+          <div class="chart-head-right">
+            <div class="chart-sub" id="trend-sub"></div>
+            <div class="range-toggle series-toggle">
+              <button class="range-btn series-btn active" data-series="expense">支出</button>
+              <button class="range-btn series-btn" data-series="income">收入</button>
+            </div>
+          </div>
+        </div>
+        <div id="chart-trend" class="chart chart-trend"></div>
+      </div>
+      <div class="chart-box trend-table-box">
+        <div class="chart-head">
+          <div class="chart-title" id="trend-table-title">每日明细</div>
+        </div>
+        <div id="trend-table" class="trend-table"></div>
+      </div>
+    </section>
+
+    <!-- 历史 -->
+    <section id="view-history" class="view">
+      <div class="view-head">
+        <h2>历史记录</h2>
+      </div>
+      <div class="filters">
+        <div class="quick-range" id="his-ranges">
+          <button class="chip active" data-range="all">全部</button>
+          <button class="chip" data-range="month">本月</button>
+          <button class="chip" data-range="lastMonth">上月</button>
+          <button class="chip" data-range="last7">近7天</button>
+          <button class="chip" data-range="year">今年</button>
+        </div>
+        <input id="his-start" type="date" placeholder="开始日期">
+        <span>至</span>
+        <input id="his-end" type="date" placeholder="结束日期">
+        <select id="his-type">
+          <option value="">全部类型</option>
+          <option value="expense">支出</option>
+          <option value="income">收入</option>
+        </select>
+        <select id="his-sort">
+          <option value="date-desc">日期：新→旧</option>
+          <option value="date-asc">日期：旧→新</option>
+          <option value="amount-desc">金额：高→低</option>
+          <option value="amount-asc">金额：低→高</option>
+        </select>
+        <input id="his-keyword" type="text" placeholder="搜索备注...">
+        <button id="his-search" class="primary-btn small">查询</button>
+      </div>
+      <div class="cat-filter">
+        <span class="cat-filter-label">类别</span>
+        <div class="cat-filter-list" id="his-catpick"></div>
+      </div>
+      <div class="his-summary hidden" id="his-summary"></div>
+      <div class="history-list" id="history-list"></div>
+    </section>
+
+    <!-- 分类管理 -->
+    <section id="view-categories" class="view">
+      <div class="view-head">
+        <h2>分类管理</h2>
+      </div>
+      <div class="cat-section">
+        <h3>支出分类</h3>
+        <div id="cat-expense" class="cat-list"></div>
+      </div>
+      <div class="cat-section">
+        <h3>收入分类</h3>
+        <div id="cat-income" class="cat-list"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal-mask" class="modal-mask hidden">
+    <div class="modal">
+      <h3 id="modal-title"></h3>
+      <div id="modal-body"></div>
+      <div class="modal-actions">
+        <button id="modal-cancel" class="ghost-btn">取消</button>
+        <button id="modal-ok" class="primary-btn small">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="echarts.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

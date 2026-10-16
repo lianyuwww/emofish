@@ -1,0 +1,16 @@
+# 依赖
+node_modules/
+
+# 运行时数据（绝不提交：含个人账目）
+data.json
+crash.log
+*.log
+
+# 本地快捷方式（机器相关）
+*.lnk
+
+# 编辑器/系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
